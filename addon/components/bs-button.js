@@ -1,15 +1,11 @@
 import { tracked } from '@glimmer/tracking';
-import { layout as templateLayout, tagName } from '@ember-decorators/component';
 import { action } from '@ember/object';
 import { equal, or } from '@ember/object/computed';
-import { scheduleOnce } from '@ember/runloop';
-import { runInDebug, warn } from '@ember/debug';
-import Component from '@ember/component';
-import layout from 'ember-bootstrap/templates/components/bs-button';
+import Component from '@glimmer/component';
 import sizeClass from 'ember-bootstrap/utils/cp/size-class';
 import typeClass from 'ember-bootstrap/utils/cp/type-class';
 import { hasBootstrapVersion } from 'ember-bootstrap/compatibility-helpers';
-import overrideable from '../utils/overrideable-decorator';
+import { arg } from 'ember-arg-types';
 
 /**
   Implements a HTML button element, with support for all [Bootstrap button CSS styles](http://getbootstrap.com/css/#buttons)
@@ -101,8 +97,6 @@ import overrideable from '../utils/overrideable-decorator';
   @extends Ember.Component
   @public
 */
-@templateLayout(layout)
-@tagName("")
 export default class Button extends Component {
   /**
    * Default label of the button. Not need if used as a block component
@@ -111,7 +105,6 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @tracked defaultText = null;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which is pending.
@@ -121,7 +114,6 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @tracked pendingText = undefined;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which succeeded.
@@ -131,7 +123,6 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @tracked fulfilledText = undefined;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which failed.
@@ -141,7 +132,6 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @tracked rejectedText = undefined;
 
   /**
    * Property to disable the button only used in internal communication
@@ -152,7 +142,7 @@ export default class Button extends Component {
    * @default null
    * @private
    */
-  @tracked _disabled = null;
+  @arg _disabled = null;
 
   get __disabled() {
     if (this._disabled !== null) {
@@ -171,7 +161,7 @@ export default class Button extends Component {
    * @deprecated
    * @public
    */
-  @tracked buttonType = 'button';
+  @arg buttonType = 'button';
 
   /**
    * Set the 'active' class to apply active/pressed CSS styling
@@ -181,7 +171,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @tracked active = false;
+  @arg active = false;
 
   /**
    * Property for block level buttons
@@ -192,7 +182,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @tracked block = false;
+  @arg block = false;
 
   /**
    * A click event on a button will not bubble up the DOM tree if it has an `onClick` action handler. Set to true to
@@ -203,7 +193,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  bubble = false;
+  @arg bubble = false;
 
   /**
    * If button is active and this is set, the icon property will match this property
@@ -212,7 +202,7 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @tracked iconActive = null;
+  @arg iconActive = null;
 
   /**
    * If button is inactive and this is set, the icon property will match this property
@@ -221,7 +211,7 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @tracked iconInactive = null;
+  @arg iconInactive = null;
 
   /**
    * Class(es) (e.g. glyphicons or font awesome) to use as a button icon
@@ -231,9 +221,8 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @overrideable
   get icon() {
-    return this.active ? this.iconActive : this.iconInactive;
+    return this.args.icon || (this.active ? this.iconActive : this.iconInactive);
   }
 
   /**
@@ -244,7 +233,7 @@ export default class Button extends Component {
    * @type any
    * @public
    */
-  value = null;
+  @arg value = null;
 
   /**
    * Controls if `onClick` action is fired concurrently. If `true` clicking button multiple times will not trigger
@@ -257,7 +246,7 @@ export default class Button extends Component {
    * @default true
    * @public
    */
-  @tracked preventConcurrency = true;
+  @arg preventConcurrency = true;
 
   /**
    * State of the button. The button's label (if not used as a block component) will be set to the
@@ -324,15 +313,6 @@ export default class Button extends Component {
    * @type boolean
    * @public
    */
-  get reset() {
-    return this._reset;
-  }
-  set reset(value) {
-    this._reset = value;
-    if (value) {
-      scheduleOnce('actions', this, 'resetState');
-    }
-  }
 
   /**
    * Property for size styling, set to 'lg', 'sm' or 'xs'
@@ -343,6 +323,7 @@ export default class Button extends Component {
    * @type String
    * @public
    */
+  @arg
   size = null;
 
   @sizeClass('btn', 'size')
@@ -358,6 +339,7 @@ export default class Button extends Component {
    * @default 'secondary'
    * @public
    */
+  @arg
   type = hasBootstrapVersion(4) ? 'secondary' : 'default';
 
   /**
@@ -368,6 +350,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
+  @arg
   outline = false;
 
 
@@ -388,7 +371,7 @@ export default class Button extends Component {
    * @param {*} value
    * @public
    */
-  onClick = null;
+  @arg onClick = null;
 
   /**
    * This will reset the state property to 'default', and with that the button's label to defaultText
@@ -396,12 +379,13 @@ export default class Button extends Component {
    * @method resetState
    * @private
    */
+  @action
   resetState() {
-    this.set('state', 'default');
+    this.state = 'default';
   }
 
   get text() {
-    return this[`${this.state}Text`] || this.defaultText;
+    return this.args[`${this.state}Text`] || this.args.defaultText;
   }
 
   /**
@@ -420,14 +404,14 @@ export default class Button extends Component {
     if (!preventConcurrency || !this.isPending) {
       let promise = (onClick)(this.value);
       if (promise && typeof promise.then === 'function' && !this.isDestroyed) {
-        this.set('state', 'pending');
+        this.state = 'pending';
         promise.then(() => {
           if (!this.isDestroyed) {
-            this.set('state', 'fulfilled');
+            this.state = 'fulfilled';
           }
         }, () => {
           if (!this.isDestroyed) {
-            this.set('state', 'rejected');
+            this.state = 'rejected';
           }
         }
         );
@@ -437,39 +421,5 @@ export default class Button extends Component {
     if (!this.bubble) {
       e.stopPropagation();
     }
-  }
-
-  init() {
-    super.init(...arguments);
-
-    // deprecate arguments used for attribute bindings only
-    runInDebug(() => {
-      [
-        // ['buttonType:type', 'submit'],
-        ['disabled', true],
-        ['title', 'foo'],
-      ].forEach(([mapping, value]) => {
-        let argument = mapping.split(':')[0];
-        let attribute = mapping.includes(':') ? mapping.split(':')[1] : argument;
-        let warningMessage =
-          `Argument ${argument} of <BsButton> component has been removed. It's only purpose ` +
-          `was setting the HTML attribute ${attribute} of the control element. You should use ` +
-          `angle bracket  component invocation syntax instead:\n` +
-          `Before:\n` +
-          `  {{bs-button ${attribute}=${typeof value === 'string' ? `"${value}"` : value}}}\n` +
-          `  <BsButton @${attribute}=${typeof value === 'string' ? `"${value}"`: `{{${value}}}`} />\n` +
-          `After:\n` +
-          `  <BsButton ${typeof value === 'boolean' ? attribute : `${attribute}="${value}"`} />`;
-
-        warn(
-          warningMessage,
-          // eslint-disable-next-line ember/no-attrs-in-components
-          !Object.keys(this.attrs).includes(argument),
-          {
-            id: `ember-bootstrap.removed-argument.button#${argument}`,
-          }
-        );
-      });
-    });
   }
 }

@@ -2,10 +2,7 @@ import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { equal, or } from '@ember/object/computed';
 import Component from '@glimmer/component';
-import sizeClass from 'ember-bootstrap/utils/cp/size-class';
-import typeClass from 'ember-bootstrap/utils/cp/type-class';
-import { hasBootstrapVersion } from 'ember-bootstrap/compatibility-helpers';
-import { arg } from 'ember-arg-types';
+import arg from 'ember-bootstrap/utils/decorators/arg';
 
 /**
   Implements a HTML button element, with support for all [Bootstrap button CSS styles](http://getbootstrap.com/css/#buttons)
@@ -142,14 +139,13 @@ export default class Button extends Component {
    * @default null
    * @private
    */
-  @arg _disabled = null;
 
   get __disabled() {
-    if (this._disabled !== null) {
-      return this._disabled;
+    if (this.args._disabled !== undefined) {
+      return this.args._disabled;
     }
 
-    return this.isPending && this.preventConcurrency;
+    return this.isPending && this.args.preventConcurrency !== false;
   }
 
   /**
@@ -171,7 +167,6 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @arg active = false;
 
   /**
    * Property for block level buttons
@@ -193,7 +188,6 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @arg bubble = false;
 
   /**
    * If button is active and this is set, the icon property will match this property
@@ -202,7 +196,6 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @arg iconActive = null;
 
   /**
    * If button is inactive and this is set, the icon property will match this property
@@ -211,7 +204,6 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @arg iconInactive = null;
 
   /**
    * Class(es) (e.g. glyphicons or font awesome) to use as a button icon
@@ -222,7 +214,7 @@ export default class Button extends Component {
    * @public
    */
   get icon() {
-    return this.args.icon || (this.active ? this.iconActive : this.iconInactive);
+    return this.args.icon || (this.args.active ? this.args.iconActive : this.args.iconInactive);
   }
 
   /**
@@ -233,7 +225,6 @@ export default class Button extends Component {
    * @type any
    * @public
    */
-  @arg value = null;
 
   /**
    * Controls if `onClick` action is fired concurrently. If `true` clicking button multiple times will not trigger
@@ -246,7 +237,6 @@ export default class Button extends Component {
    * @default true
    * @public
    */
-  @arg preventConcurrency = true;
 
   /**
    * State of the button. The button's label (if not used as a block component) will be set to the
@@ -323,11 +313,6 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @arg
-  size = null;
-
-  @sizeClass('btn', 'size')
-  sizeClass;
 
   /**
    * Property for type styling
@@ -339,8 +324,6 @@ export default class Button extends Component {
    * @default 'secondary'
    * @public
    */
-  @arg
-  type = hasBootstrapVersion(4) ? 'secondary' : 'default';
 
   /**
    * Property to create outline buttons (BS4+ only)
@@ -350,12 +333,6 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @arg
-  outline = false;
-
-
-  @typeClass('btn', 'type')
-  typeClass;
 
   /**
    * When clicking the button this action is called with the value of the button (that is the value of the "value" property).
@@ -371,7 +348,6 @@ export default class Button extends Component {
    * @param {*} value
    * @public
    */
-  @arg onClick = null;
 
   /**
    * This will reset the state property to 'default', and with that the button's label to defaultText
@@ -394,15 +370,15 @@ export default class Button extends Component {
    */
   @action
   handleClick(e) {
-    let onClick = this.onClick;
-    let preventConcurrency = this.preventConcurrency;
+    let onClick = this.args.onClick;
+    let preventConcurrency = this.args.preventConcurrency;
 
-    if (onClick === null || onClick === undefined) {
+    if (!onClick) {
       return;
     }
 
     if (!preventConcurrency || !this.isPending) {
-      let promise = (onClick)(this.value);
+      let promise = (onClick)(this.args.value);
       if (promise && typeof promise.then === 'function' && !this.isDestroyed) {
         this.state = 'pending';
         promise.then(() => {
@@ -418,7 +394,7 @@ export default class Button extends Component {
       }
     }
 
-    if (!this.bubble) {
+    if (!this.args.bubble) {
       e.stopPropagation();
     }
   }

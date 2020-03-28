@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@ember/optional-features": "^1.1.0",
-    "@glimmer/component": "^1.0.0",
     "babel-eslint": "^10.0.3",
     "bootstrap": "^4.0.0",
     "bootstrap-sass": "^3.3.7",
@@ -88,6 +87,7 @@
   },
   "dependencies": {
     "@ember/render-modifiers": "^1.0.2",
+    "@glimmer/component": "^1.0.0",
     "broccoli-debug": "^0.6.3",
     "broccoli-funnel": "^2.0.0",
     "broccoli-merge-trees": "^3.0.1",

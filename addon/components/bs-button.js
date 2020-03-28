@@ -1,6 +1,6 @@
+import { tracked } from '@glimmer/tracking';
 import { layout as templateLayout, tagName } from '@ember-decorators/component';
-import { observes } from '@ember-decorators/object';
-import { computed, action } from '@ember/object';
+import { action } from '@ember/object';
 import { equal, or } from '@ember/object/computed';
 import { scheduleOnce } from '@ember/runloop';
 import { runInDebug, warn } from '@ember/debug';
@@ -8,9 +8,8 @@ import Component from '@ember/component';
 import layout from 'ember-bootstrap/templates/components/bs-button';
 import sizeClass from 'ember-bootstrap/utils/cp/size-class';
 import typeClass from 'ember-bootstrap/utils/cp/type-class';
-import overrideableCP from 'ember-bootstrap/utils/cp/overrideable';
-import defaultValue from 'ember-bootstrap/utils/default-decorator';
 import { hasBootstrapVersion } from 'ember-bootstrap/compatibility-helpers';
+import overrideable from '../utils/overrideable-decorator';
 
 /**
   Implements a HTML button element, with support for all [Bootstrap button CSS styles](http://getbootstrap.com/css/#buttons)
@@ -112,8 +111,7 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @defaultValue
-  defaultText = null;
+  @tracked defaultText = null;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which is pending.
@@ -123,8 +121,7 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @defaultValue
-  pendingText = undefined;
+  @tracked pendingText = undefined;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which succeeded.
@@ -134,8 +131,7 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @defaultValue
-  fulfilledText = undefined;
+  @tracked fulfilledText = undefined;
 
   /**
    * Label of the button used if `onClick` event has returned a Promise which failed.
@@ -145,8 +141,7 @@ export default class Button extends Component {
    * @type string
    * @public
    */
-  @defaultValue
-  rejectedText = undefined;
+  @tracked rejectedText = undefined;
 
   /**
    * Property to disable the button only used in internal communication
@@ -157,10 +152,8 @@ export default class Button extends Component {
    * @default null
    * @private
    */
-  @defaultValue
-  _disabled = null;
+  @tracked _disabled = null;
 
-  @computed('_disabled', 'isPending', 'preventConcurrency')
   get __disabled() {
     if (this._disabled !== null) {
       return this._disabled;
@@ -178,8 +171,7 @@ export default class Button extends Component {
    * @deprecated
    * @public
    */
-  @defaultValue
-  buttonType = 'button';
+  @tracked buttonType = 'button';
 
   /**
    * Set the 'active' class to apply active/pressed CSS styling
@@ -189,8 +181,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @defaultValue
-  active = false;
+  @tracked active = false;
 
   /**
    * Property for block level buttons
@@ -201,8 +192,7 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @defaultValue
-  block = false;
+  @tracked block = false;
 
   /**
    * A click event on a button will not bubble up the DOM tree if it has an `onClick` action handler. Set to true to
@@ -213,7 +203,6 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @defaultValue
   bubble = false;
 
   /**
@@ -223,8 +212,7 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @defaultValue
-  iconActive = null;
+  @tracked iconActive = null;
 
   /**
    * If button is inactive and this is set, the icon property will match this property
@@ -233,8 +221,7 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @defaultValue
-  iconInactive = null;
+  @tracked iconInactive = null;
 
   /**
    * Class(es) (e.g. glyphicons or font awesome) to use as a button icon
@@ -242,13 +229,12 @@ export default class Button extends Component {
    *
    * @property icon
    * @type String
-   * @readonly
    * @public
    */
-  @overrideableCP('active', function() {
+  @overrideable
+  get icon() {
     return this.active ? this.iconActive : this.iconInactive;
-  })
-  icon;
+  }
 
   /**
    * Supply a value that will be associated with this button. This will be send
@@ -258,7 +244,6 @@ export default class Button extends Component {
    * @type any
    * @public
    */
-  @defaultValue
   value = null;
 
   /**
@@ -272,8 +257,7 @@ export default class Button extends Component {
    * @default true
    * @public
    */
-  @defaultValue
-  preventConcurrency = true;
+  @tracked preventConcurrency = true;
 
   /**
    * State of the button. The button's label (if not used as a block component) will be set to the
@@ -287,8 +271,7 @@ export default class Button extends Component {
    * @default 'default'
    * @private
    */
-  @defaultValue
-  state = 'default';
+  @tracked state = 'default';
 
   /**
    * Promise returned by `onClick` event is pending.
@@ -341,8 +324,15 @@ export default class Button extends Component {
    * @type boolean
    * @public
    */
-  @defaultValue
-  reset = null;
+  get reset() {
+    return this._reset;
+  }
+  set reset(value) {
+    this._reset = value;
+    if (value) {
+      scheduleOnce('actions', this, 'resetState');
+    }
+  }
 
   /**
    * Property for size styling, set to 'lg', 'sm' or 'xs'
@@ -353,7 +343,6 @@ export default class Button extends Component {
    * @type String
    * @public
    */
-  @defaultValue
   size = null;
 
   @sizeClass('btn', 'size')
@@ -369,7 +358,6 @@ export default class Button extends Component {
    * @default 'secondary'
    * @public
    */
-  @defaultValue
   type = hasBootstrapVersion(4) ? 'secondary' : 'default';
 
   /**
@@ -380,7 +368,6 @@ export default class Button extends Component {
    * @default false
    * @public
    */
-  @defaultValue
   outline = false;
 
 
@@ -401,7 +388,6 @@ export default class Button extends Component {
    * @param {*} value
    * @public
    */
-  @defaultValue
   onClick = null;
 
   /**
@@ -414,14 +400,6 @@ export default class Button extends Component {
     this.set('state', 'default');
   }
 
-  @observes('reset')
-  resetObserver() {
-    if (this.reset) {
-      scheduleOnce('actions', this, 'resetState');
-    }
-  }
-
-  @computed('state', 'defaultText', 'pendingText', 'fulfilledText', 'rejectedText')
   get text() {
     return this[`${this.state}Text`] || this.defaultText;
   }
